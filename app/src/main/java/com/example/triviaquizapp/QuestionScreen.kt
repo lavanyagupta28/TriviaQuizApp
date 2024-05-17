@@ -26,15 +26,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 
 @Composable
-fun QuestionScreen(questionOutputList: List<QuestionOutput>) {
+fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavController) {
 
+    var score by remember {mutableStateOf(0)}
+    var correctQuestions by remember {mutableStateOf(0)}
     var currentIndex by remember { mutableStateOf(0) }
     var selectedAnswer by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
     var isNext by remember { mutableStateOf(false) }
+
+
+    if(currentIndex >= questionOutputList.size) {
+        val questionCount = questionOutputList.size
+        navController.navigate(
+            "${Screen.LastScreen.route}/$questionCount/$score/$correctQuestions"
+        )
+        return;
+    }
     val question = questionOutputList[currentIndex]
     Column(
         Modifier
@@ -61,7 +74,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>) {
         )
         Row(horizontalArrangement = Arrangement.Start) {
             Text(
-                text = "Score",
+                text = "Score: $score",
                 color = Color.White,
                 fontSize = 15.sp,
                 textAlign = TextAlign.Start
@@ -88,6 +101,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>) {
             OptionButton(
                 option = option,
                 isSubmitted = isSubmitted,
+
                 correctAnswer = question.correctAnswer,
                 selectedAnswer = selectedAnswer,
                 onOptionSelected = {
@@ -109,6 +123,10 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>) {
                     isNext = false
                 } else {
                     isSubmitted = true
+                    if(selectedAnswer == question.correctAnswer){
+                        score += 10
+                        correctQuestions += 1
+                    }
                 }
             },
             modifier = Modifier
@@ -189,6 +207,7 @@ fun QuestionScreenPreview() {
         "Solid Snake",
         listOf("Pit", "Meta Knight", "R.O.B.", "Solid Snake"), Category.ENTERTAINMENT_VIDEO_GAMES
     )
-    QuestionScreen(listOf(questionInput))
+    val navController = rememberNavController()
+    QuestionScreen(listOf(questionInput),navController)
 
 }
