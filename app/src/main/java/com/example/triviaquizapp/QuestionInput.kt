@@ -1,6 +1,6 @@
 package com.example.triviaquizapp
 
-data class Question(
+data class QuestionInput(
     val category: Category,
     val type: Type,
     val difficulty: Difficulty,
