@@ -31,7 +31,7 @@ fun EndScreen(questionCount: Int, score: Int, correctQuestion: Int) {
     ) {
         Box(
             modifier = Modifier
-                .background(Color(0xFFFbf8f6))
+                .background(Color(0xFFd7f1f1))
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .border(3.dp,Color(0xFFFF7F00)),

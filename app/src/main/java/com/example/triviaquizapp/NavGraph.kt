@@ -26,22 +26,21 @@ fun SetupNavGraph(
             val questionList =
                 navController.previousBackStackEntry?.savedStateHandle?.get<List<QuestionOutput>>("questionList")
             if (questionList != null) {
-                QuestionScreen(questionList,navController)
+                QuestionScreen(questionList, navController)
             }
         }
         composable(
-            route = Screen.LastScreen.route +"/{questionCount}/{score}/{correctQuestion}",
+            route = Screen.LastScreen.route + "/{questionCount}/{score}/{correctQuestion}",
             arguments = listOf(
-                navArgument("questionCount"){type = NavType.IntType},
-                navArgument("score"){type = NavType.IntType},
-                navArgument("correctQuestion"){type = NavType.IntType}
+                navArgument("questionCount") { type = NavType.IntType },
+                navArgument("score") { type = NavType.IntType },
+                navArgument("correctQuestion") { type = NavType.IntType }
             )
-        ){
-            backStackEntry->
-                val questionCount = backStackEntry.arguments?.getInt("questionCount") ?:0
-                val score = backStackEntry.arguments?.getInt("score") ?: 0
-                val correctQuestion = backStackEntry.arguments?.getInt("correctQuestion") ?: 0
-             EndScreen(questionCount,score,correctQuestion)
+        ) { backStackEntry ->
+            val questionCount = backStackEntry.arguments?.getInt("questionCount") ?: 0
+            val score = backStackEntry.arguments?.getInt("score") ?: 0
+            val correctQuestion = backStackEntry.arguments?.getInt("correctQuestion") ?: 0
+            EndScreen(questionCount, score, correctQuestion)
         }
     }
 }

@@ -31,22 +31,22 @@ import androidx.navigation.compose.rememberNavController
 
 
 @Composable
-fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavController) {
+fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavController) {
 
-    var score by remember {mutableStateOf(0)}
-    var correctQuestions by remember {mutableStateOf(0)}
+    var score by remember { mutableStateOf(0) }
+    var correctQuestions by remember { mutableStateOf(0) }
     var currentIndex by remember { mutableStateOf(0) }
     var selectedAnswer by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
     var isNext by remember { mutableStateOf(false) }
 
 
-    if(currentIndex >= questionOutputList.size) {
+    if (currentIndex >= questionOutputList.size) {
         val questionCount = questionOutputList.size
         navController.navigate(
             "${Screen.LastScreen.route}/$questionCount/$score/$correctQuestions"
         )
-        return;
+        return
     }
     val question = questionOutputList[currentIndex]
     Column(
@@ -64,7 +64,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavCo
 
         ) {
             Text(
-                text = question.category.displayName,
+                text = question.category,
                 color = Color.White,
                 fontSize = 25.sp,
             )
@@ -123,7 +123,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavCo
                     isNext = false
                 } else {
                     isSubmitted = true
-                    if(selectedAnswer == question.correctAnswer){
+                    if (selectedAnswer == question.correctAnswer) {
                         score += 10
                         correctQuestions += 1
                     }
@@ -205,9 +205,9 @@ fun QuestionScreenPreview() {
     val questionInput = QuestionOutput(
         "Which of these characters was almost added into Super Smash Bros. Melee, but not included as the game was too far in development?",
         "Solid Snake",
-        listOf("Pit", "Meta Knight", "R.O.B.", "Solid Snake"), Category.ENTERTAINMENT_VIDEO_GAMES
+        listOf("Pit", "Meta Knight", "R.O.B.", "Solid Snake"), "ENTERTAINMENT_VIDEO_GAMES"
     )
     val navController = rememberNavController()
-    QuestionScreen(listOf(questionInput),navController)
+    QuestionScreen(listOf(questionInput), navController)
 
 }

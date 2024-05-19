@@ -1,23 +1,27 @@
 package com.example.triviaquizapp
 
+import com.example.triviaquizapp.model.QuestionInput
+
 object HardcodedQuestions {
     val questionInputs = listOf(
         QuestionInput(
-            Category.GENERAL_KNOWLEDGE,
-            Type.MULTIPLE_CHOICE,
-            Difficulty.MEDIUM,
+           "GENERAL KNOWLEDGE",
+            "MULTIPLE_CHOICE",
+          "MEDIUM",
             "What is the average life span of a garden ant?",
             "15 years",listOf("24 hours","1 week","3 years")
         ),
         QuestionInput(
-            Category.ENTERTAINMENT_MUSIC,
-            Type.MULTIPLE_CHOICE,
-            Difficulty.MEDIUM,
+            "ENTERTAINMENT_MUSIC",
+            "MULTIPLE_CHOICE",
+            "MEDIUM",
             "What was Raekwon the Chefs debut solo album?",
             "Only Built 4 Cuban Linx",listOf("Shaolin vs Wu-Tang","The Wild","The Lex Diamond Story")
         )
     )
-    val jsonString = """
+}
+
+  /*  val jsonString = """
         {
             "response_code": 0,
             "results": [
@@ -136,4 +140,4 @@ object HardcodedQuestions {
             ]
         }
     """.trimIndent()
-}
+} */

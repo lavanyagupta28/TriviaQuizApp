@@ -1,7 +1,7 @@
 package com.example.triviaquizapp
 
-enum class Category(val id:Int, val displayName: String) {
-    ANY_CATEGORY(1,"Any Category"),
+enum class Category(val id: Int, val displayName: String) {
+    ANY_CATEGORY(1, "Any Category"),
     GENERAL_KNOWLEDGE(2, "General Knowledge"),
     ENTERTAINMENT_BOOKS(3, "Entertainment: Books"),
     ENTERTAINMENT_FILM(4, "Entertainment: Film"),
@@ -29,8 +29,8 @@ enum class Category(val id:Int, val displayName: String) {
 
 
     companion object {
-        fun getIdByDisplayName(displayName: String):Int? {
-            return entries.find{it.displayName == displayName}?.id
+        fun getIdByDisplayName(displayName: String): Int? {
+            return entries.find { it.displayName == displayName }?.id
         }
     }
 }
