@@ -4,5 +4,5 @@ data class QuestionOutput(
     val question: String,
     val correctAnswer: String,
     val options: List<String>,
-    val category: Category
+    val category: String
 )

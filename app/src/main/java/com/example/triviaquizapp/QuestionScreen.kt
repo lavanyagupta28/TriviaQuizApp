@@ -31,22 +31,22 @@ import androidx.navigation.compose.rememberNavController
 
 
 @Composable
-fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavController) {
+fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavController) {
 
-    var score by remember {mutableStateOf(0)}
-    var correctQuestions by remember {mutableStateOf(0)}
+    var score by remember { mutableStateOf(0) }
+    var correctQuestions by remember { mutableStateOf(0) }
     var currentIndex by remember { mutableStateOf(0) }
     var selectedAnswer by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
     var isNext by remember { mutableStateOf(false) }
+    var isSelectedOnce by remember { mutableStateOf(false) }
 
-
-    if(currentIndex >= questionOutputList.size) {
+    if (currentIndex >= questionOutputList.size) {
         val questionCount = questionOutputList.size
         navController.navigate(
             "${Screen.LastScreen.route}/$questionCount/$score/$correctQuestions"
         )
-        return;
+        return
     }
     val question = questionOutputList[currentIndex]
     Column(
@@ -64,9 +64,9 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavCo
 
         ) {
             Text(
-                text = question.category.displayName,
+                text = question.category,
                 color = Color.White,
-                fontSize = 25.sp,
+                fontSize = 23.sp,
             )
         }
         Spacer(
@@ -89,15 +89,22 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavCo
         Spacer(
             modifier = Modifier.height(20.dp)
         )
-        Text(
-            text = question.question,
-            color = Color.White
-        )
+        Row {
+            Text(
+                text = "Q${currentIndex + 1} ",
+                color = Color.White
+
+            )
+            Text(
+                text = question.question,
+                color = Color.White
+            )
+        }
         Spacer(
             modifier = Modifier.height(30.dp)
         )
 
-        question.options.forEachIndexed { index, option ->
+        question.options.forEachIndexed { _, option ->
             OptionButton(
                 option = option,
                 isSubmitted = isSubmitted,
@@ -106,6 +113,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavCo
                 selectedAnswer = selectedAnswer,
                 onOptionSelected = {
                     if (!isSubmitted) {
+                        isSelectedOnce = true
                         selectedAnswer = it
                     }
                 }
@@ -117,13 +125,15 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavCo
 
         SubmitButton(
             onClick = {
-                if (isSubmitted) { // they clicked on next button
+                if (isSubmitted && isSelectedOnce) { // they clicked on next button
                     currentIndex++
                     isSubmitted = false
                     isNext = false
-                } else {
+                    isSelectedOnce = false
+                }
+                if (isSelectedOnce) {
                     isSubmitted = true
-                    if(selectedAnswer == question.correctAnswer){
+                    if (selectedAnswer == question.correctAnswer) {
                         score += 10
                         correctQuestions += 1
                     }
@@ -133,7 +143,8 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>,navController: NavCo
                 .fillMaxWidth()
                 .height(80.dp)
                 .padding(bottom = 10.dp),
-            isSubmitted = isSubmitted
+            isSubmitted = isSubmitted,
+            isSelectedOnce = isSelectedOnce
         )
 
 
@@ -182,7 +193,8 @@ fun OptionButton(
 fun SubmitButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isSubmitted: Boolean
+    isSubmitted: Boolean,
+    isSelectedOnce: Boolean
 ) {
     Button(
         onClick = onClick,
@@ -192,7 +204,7 @@ fun SubmitButton(
         modifier = modifier
     ) {
         Text(
-            text = if (isSubmitted) "NEXT" else "SUBMIT",
+            text = if (isSubmitted && isSelectedOnce) "NEXT" else "SUBMIT",
             color = Color.White
         )
     }
@@ -205,9 +217,9 @@ fun QuestionScreenPreview() {
     val questionInput = QuestionOutput(
         "Which of these characters was almost added into Super Smash Bros. Melee, but not included as the game was too far in development?",
         "Solid Snake",
-        listOf("Pit", "Meta Knight", "R.O.B.", "Solid Snake"), Category.ENTERTAINMENT_VIDEO_GAMES
+        listOf("Pit", "Meta Knight", "R.O.B.", "Solid Snake"), "ENTERTAINMENT_VIDEO_GAMES"
     )
     val navController = rememberNavController()
-    QuestionScreen(listOf(questionInput),navController)
+    QuestionScreen(listOf(questionInput), navController)
 
 }
