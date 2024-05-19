@@ -1,29 +1,14 @@
-package com.example.triviaquizapp
 
 import android.text.Html
-import android.util.JsonReader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,24 +21,26 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.triviaquizapp.Category
+import com.example.triviaquizapp.Difficulty
+import com.example.triviaquizapp.QuestionOutput
+import com.example.triviaquizapp.Screen
 import com.example.triviaquizapp.model.QuestionInput
 import com.example.triviaquizapp.viewModel.QuestionViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+
 
 @Composable
-fun FrontPage(navController: NavController) {
-    val questionViewModel: QuestionViewModel = viewModel()
-    var questionCount:Int by remember { mutableStateOf(5) }//TODO: make it variable
-    var difficulty: String by remember { mutableStateOf("Any Difficulty") }
-    var difficultyLevel: Int by remember { mutableStateOf(0) }
-    var category: Category by remember { mutableStateOf(Category.ANY_CATEGORY) }
-    var selectedCategory: Category by  remember { mutableStateOf(Category.ANY_CATEGORY) }
-    val categories:List<Category> = Category.getAllCategories()
+fun FrontPage(navController: NavController, questionViewModel: QuestionViewModel = viewModel()) {
+    var questionCount by rememberSaveable { mutableStateOf(questionViewModel.questionCount) }
+    var difficulty by rememberSaveable { mutableStateOf(questionViewModel.difficulty) }
+    var difficultyLevel by rememberSaveable { mutableStateOf(questionViewModel.difficultyLevel) }
+    var selectedCategory by rememberSaveable { mutableStateOf(questionViewModel.selectedCategory) }
+
+    val categories: List<Category> = Category.getAllCategories()
 
     val questionInputList = questionViewModel.questionListResponse
     if (questionInputList.isNotEmpty()) {
-        navController.currentBackStackEntry?.savedStateHandle?.set( // TODO: use viewModel
+        navController.currentBackStackEntry?.savedStateHandle?.set(
             key = "questionList",
             value = getShuffledOptions(questionInputList)
         )
@@ -81,7 +68,10 @@ fun FrontPage(navController: NavController) {
                 .background(Color(android.graphics.Color.parseColor("#FF7F00")))
                 .fillMaxWidth()
                 .padding(vertical = 16.dp)
-                .clickable { questionCount = questionCountManager(questionCount) }
+                .clickable {
+                    questionCount = questionCountManager(questionCount)
+                    questionViewModel.questionCount = questionCount // Update ViewModel
+                }
         ) {
             Text(
                 text = "Question Count",
@@ -89,7 +79,6 @@ fun FrontPage(navController: NavController) {
                 color = Color.White,
                 fontWeight = FontWeight.Medium
             )
-
             Text(
                 text = questionCount.toString(),
                 color = Color.White,
@@ -99,16 +88,17 @@ fun FrontPage(navController: NavController) {
             )
         }
         Spacer(modifier = Modifier.height(10.dp))
-        // Difficulty Level 1 for easy
         Box(
             modifier = Modifier
                 .background(Color(android.graphics.Color.parseColor("#1E1E1E")))
                 .padding(16.dp)
                 .fillMaxWidth()
-                .clickable { difficultyLevel = (difficultyLevel + 1) % 4 }
+                .clickable {
+                    difficultyLevel = (difficultyLevel + 1) % 4
+                    questionViewModel.difficultyLevel = difficultyLevel // Update ViewModel
+                }
                 .padding(vertical = 8.dp, horizontal = 16.dp)
                 .clip(RoundedCornerShape(8.dp)),
-
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -120,42 +110,36 @@ fun FrontPage(navController: NavController) {
                 },
                 color = Color.White
             )
-
         }
         LazyColumn(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
                 .weight(1f)
-        ){
-          items(categories) { category ->
-              Spacer(modifier = Modifier.height(10.dp))
-              categoryUI(category = category , onCategorySelected = {
-                  selectedCategory = category
-              } , selectedCategory = selectedCategory)
-
-          }
+        ) {
+            items(categories) { category ->
+                Spacer(modifier = Modifier.height(10.dp))
+                categoryUI(category = category, onCategorySelected = {
+                    selectedCategory = category
+                    questionViewModel.selectedCategory = selectedCategory // Update ViewModel
+                }, selectedCategory = selectedCategory)
+            }
         }
-
-
-
-
         Box(
             modifier = Modifier
                 .background(Color(android.graphics.Color.parseColor("#d7f1f1")))
                 .padding(8.dp)
                 .fillMaxWidth()
                 .clickable {
-                    Difficulty
-                        .getDifficultyByDifficultyLevel(difficultyLevel)
-                        ?.let {
-                            difficulty = it.apiName
-                        }
+                    Difficulty.getDifficultyByDifficultyLevel(difficultyLevel)?.let {
+                        difficulty = it.apiName
+                        questionViewModel.difficulty = difficulty // Update ViewModel
+                    }
                     var difficultyApi: String? = difficulty
                     if (difficulty == "") {
                         difficultyApi = null
                     }
                     var categoryApi: Int? = selectedCategory.id
-                    if(selectedCategory == Category.ANY_CATEGORY){
+                    if (selectedCategory == Category.ANY_CATEGORY) {
                         categoryApi = null
                     }
                     questionViewModel.getQuestionList(
@@ -164,12 +148,10 @@ fun FrontPage(navController: NavController) {
                         difficultyApi,
                         null
                     )
-
                 }
                 .height(60.dp)
                 .padding(vertical = 16.dp, horizontal = 32.dp)
                 .clip(RoundedCornerShape(16.dp)),
-
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -182,74 +164,36 @@ fun FrontPage(navController: NavController) {
     }
 }
 
-
 @Composable
-fun categoryUI(category: Category, onCategorySelected:(Category)->Unit, selectedCategory: Category){
-   Box(modifier = Modifier
-       .background(
-           if (category == selectedCategory) Color(
-               android.graphics.Color.parseColor(
-                   "#FF7F00"
-               )
-           ) else Color(android.graphics.Color.parseColor("#1E1E1E"))
-       )
-       .padding(8.dp)
-       .fillMaxWidth()
-       .clickable { onCategorySelected(category) }
-       .padding(vertical = 8.dp, horizontal = 8.dp)
-       .clip(RoundedCornerShape(8.dp)),
-
-       contentAlignment = Alignment.Center){
-       Text(
-           text = category.displayName,
-           color = Color.White
-       )
-   }
-
-}
-fun questionCountManager(questionCount: Int):Int {
-    if(questionCount == 50){
-        return 5
+fun categoryUI(category: Category, onCategorySelected: (Category) -> Unit, selectedCategory: Category) {
+    Box(
+        modifier = Modifier
+            .background(
+                if (category == selectedCategory) Color(
+                    android.graphics.Color.parseColor("#FF7F00")
+                ) else Color(android.graphics.Color.parseColor("#1E1E1E"))
+            )
+            .padding(8.dp)
+            .fillMaxWidth()
+            .clickable { onCategorySelected(category) }
+            .padding(vertical = 8.dp, horizontal = 8.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = category.displayName,
+            color = Color.White
+        )
     }
- return (questionCount + 5)
 }
 
-/*suspend fun fetchQuestions(
-    difficulty: Difficulty,
-    category: Category,
-    questionCount: Int,
-    questionViewModel: QuestionViewModel
-): List<QuestionOutput> = coroutineScope {
-    val deferredQuestions = async {
-        getQuestions(difficulty, category, questionCount, questionViewModel)
+fun questionCountManager(questionCount: Int): Int {
+    return if (questionCount == 50) {
+        5
+    } else {
+        questionCount + 5
     }
-    deferredQuestions.await()
 }
-*/
-
-/*
-fun getQuestions(
-    difficulty: Difficulty,
-    category: Category,
-    questionCount: Int,
-    viewModel: QuestionViewModel
-): List<QuestionOutput> {
-//    val jsonString = HardcodedQuestions.jsonString
-//    val gson = Gson()
-//    val questionInput = gson.fromJson(jsonString, QuestionInput::class.java )
-
-    // val questionInputList = HardcodedQuestions.questionInputs //TODO: get questions from API call
-
-    var shuffledOptions: List<QuestionOutput> = emptyList()
-    if(difficulty.apiName == "Any Category"){
-
-        }
-    val questionInputList = viewModel.questionListResponse
-
-    shuffledOptions = getShuffledOptions(questionInputList)
-    return shuffledOptions
-}
-*/
 
 fun getShuffledOptions(questionInputList: List<QuestionInput>?): List<QuestionOutput> {
     val questionOutputList = mutableListOf<QuestionOutput>()
@@ -278,16 +222,9 @@ fun decodeHtmlEntities(text: String): String {
     return Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY).toString()
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun FrontPagePreview() {
     val navController = rememberNavController()
-    FrontPage(
-        navController
-    )
+    FrontPage(navController)
 }
-
-
-
-

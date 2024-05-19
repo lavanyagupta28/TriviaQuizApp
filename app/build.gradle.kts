@@ -66,7 +66,7 @@ dependencies {
     // Lifecycle and ViewModel
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
+
 
     // Core and Compose
     implementation("androidx.core:core-ktx:1.13.1")
@@ -83,6 +83,7 @@ dependencies {
     // Navigation
     implementation("androidx.navigation:navigation-runtime-ktx:2.7.7")
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
 
     // Testing
     testImplementation("junit:junit:4.13.2")

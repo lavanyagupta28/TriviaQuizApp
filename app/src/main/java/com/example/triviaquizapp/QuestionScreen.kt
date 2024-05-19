@@ -39,7 +39,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
     var selectedAnswer by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
     var isNext by remember { mutableStateOf(false) }
-
+    var isSelectedOnce by remember { mutableStateOf(false) }
 
     if (currentIndex >= questionOutputList.size) {
         val questionCount = questionOutputList.size
@@ -66,7 +66,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
             Text(
                 text = question.category,
                 color = Color.White,
-                fontSize = 25.sp,
+                fontSize = 23.sp,
             )
         }
         Spacer(
@@ -89,15 +89,22 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
         Spacer(
             modifier = Modifier.height(20.dp)
         )
-        Text(
-            text = question.question,
-            color = Color.White
-        )
+        Row() {
+            Text(
+                text = "Q${currentIndex+1} ",
+                color = Color.White
+
+            )
+            Text(
+                text = question.question,
+                color = Color.White
+            )
+        }
         Spacer(
             modifier = Modifier.height(30.dp)
         )
 
-        question.options.forEachIndexed { index, option ->
+        question.options.forEachIndexed { _, option ->
             OptionButton(
                 option = option,
                 isSubmitted = isSubmitted,
@@ -106,6 +113,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
                 selectedAnswer = selectedAnswer,
                 onOptionSelected = {
                     if (!isSubmitted) {
+                        isSelectedOnce = true
                         selectedAnswer = it
                     }
                 }
@@ -117,11 +125,13 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
 
         SubmitButton(
             onClick = {
-                if (isSubmitted) { // they clicked on next button
+                if (isSubmitted && isSelectedOnce) { // they clicked on next button
                     currentIndex++
                     isSubmitted = false
                     isNext = false
-                } else {
+                    isSelectedOnce = false
+                }
+                if(isSelectedOnce) {
                     isSubmitted = true
                     if (selectedAnswer == question.correctAnswer) {
                         score += 10
@@ -133,7 +143,8 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
                 .fillMaxWidth()
                 .height(80.dp)
                 .padding(bottom = 10.dp),
-            isSubmitted = isSubmitted
+            isSubmitted = isSubmitted,
+            isSelectedOnce = isSelectedOnce
         )
 
 
@@ -182,7 +193,8 @@ fun OptionButton(
 fun SubmitButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isSubmitted: Boolean
+    isSubmitted: Boolean,
+    isSelectedOnce: Boolean
 ) {
     Button(
         onClick = onClick,
@@ -192,7 +204,7 @@ fun SubmitButton(
         modifier = modifier
     ) {
         Text(
-            text = if (isSubmitted) "NEXT" else "SUBMIT",
+            text = if (isSubmitted && isSelectedOnce) "NEXT" else "SUBMIT",
             color = Color.White
         )
     }
