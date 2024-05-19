@@ -1,15 +1,23 @@
 package com.example.triviaquizapp
 
+import android.text.Html
+import android.util.JsonReader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,10 +44,12 @@ import kotlinx.coroutines.coroutineScope
 @Composable
 fun FrontPage(navController: NavController) {
     val questionViewModel: QuestionViewModel = viewModel()
-    val questionCount = 10 //TODO: make it variable
-    var difficulty: Difficulty by remember { mutableStateOf(Difficulty.ANY_DIFFICULTY) }
+    var questionCount:Int by remember { mutableStateOf(5) }//TODO: make it variable
+    var difficulty: String by remember { mutableStateOf("Any Difficulty") }
     var difficultyLevel: Int by remember { mutableStateOf(0) }
     var category: Category by remember { mutableStateOf(Category.ANY_CATEGORY) }
+    var selectedCategory: Category by  remember { mutableStateOf(Category.ANY_CATEGORY) }
+    val categories:List<Category> = Category.getAllCategories()
 
     val questionInputList = questionViewModel.questionListResponse
     if (questionInputList.isNotEmpty()) {
@@ -71,6 +81,7 @@ fun FrontPage(navController: NavController) {
                 .background(Color(android.graphics.Color.parseColor("#FF7F00")))
                 .fillMaxWidth()
                 .padding(vertical = 16.dp)
+                .clickable { questionCount = questionCountManager(questionCount) }
         ) {
             Text(
                 text = "Question Count",
@@ -78,6 +89,7 @@ fun FrontPage(navController: NavController) {
                 color = Color.White,
                 fontWeight = FontWeight.Medium
             )
+
             Text(
                 text = questionCount.toString(),
                 color = Color.White,
@@ -101,7 +113,7 @@ fun FrontPage(navController: NavController) {
         ) {
             Text(
                 text = when (difficultyLevel) {
-                    0 -> "Difficulty: AnyCategory"
+                    0 -> "Difficulty: Any Difficulty"
                     1 -> "Difficulty: EASY"
                     2 -> "Difficulty: MEDIUM"
                     else -> "Difficulty: HARD"
@@ -110,54 +122,22 @@ fun FrontPage(navController: NavController) {
             )
 
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-        Box(
+        LazyColumn(
             modifier = Modifier
-                .background(
-                    if (category == Category.SPORTS) Color(
-                        android.graphics.Color.parseColor(
-                            "#FF7F00"
-                        )
-                    ) else Color(android.graphics.Color.parseColor("#1E1E1E"))
-                )
-                .padding(16.dp)
-                .fillMaxWidth()
-                .clickable { category = Category.SPORTS }
-                .padding(vertical = 8.dp, horizontal = 16.dp)
-                .clip(RoundedCornerShape(8.dp)),
+                .clip(RoundedCornerShape(8.dp))
+                .weight(1f)
+        ){
+          items(categories) { category ->
+              Spacer(modifier = Modifier.height(10.dp))
+              categoryUI(category = category , onCategorySelected = {
+                  selectedCategory = category
+              } , selectedCategory = selectedCategory)
 
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Sports",
-                color = Color.White
-            )
+          }
         }
-        Spacer(modifier = Modifier.height(10.dp))
-        Box(
-            modifier = Modifier
-                .background(
-                    if (category == Category.ENTERTAINMENT_VIDEO_GAMES) Color(
-                        android.graphics.Color.parseColor(
-                            "#FF7F00"
-                        )
-                    ) else Color(android.graphics.Color.parseColor("#1E1E1E"))
-                )
-                .padding(16.dp)
-                .fillMaxWidth()
-                .clickable { category = Category.ENTERTAINMENT_VIDEO_GAMES }
-                .padding(vertical = 8.dp, horizontal = 16.dp)
-                .clip(RoundedCornerShape(8.dp)),
 
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Entertainment: Video Games",
-                color = Color.White
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
+
+
 
         Box(
             modifier = Modifier
@@ -168,14 +148,23 @@ fun FrontPage(navController: NavController) {
                     Difficulty
                         .getDifficultyByDifficultyLevel(difficultyLevel)
                         ?.let {
-                            difficulty = it
+                            difficulty = it.apiName
                         }
+                    var difficultyApi: String? = difficulty
+                    if (difficulty == "") {
+                        difficultyApi = null
+                    }
+                    var categoryApi: Int? = selectedCategory.id
+                    if(selectedCategory == Category.ANY_CATEGORY){
+                        categoryApi = null
+                    }
                     questionViewModel.getQuestionList(
                         questionCount,
-                        null,
-                        null,
+                        categoryApi,
+                        difficultyApi,
                         null
                     )
+
                 }
                 .height(60.dp)
                 .padding(vertical = 16.dp, horizontal = 32.dp)
@@ -193,7 +182,39 @@ fun FrontPage(navController: NavController) {
     }
 }
 
-suspend fun fetchQuestions(
+
+@Composable
+fun categoryUI(category: Category, onCategorySelected:(Category)->Unit, selectedCategory: Category){
+   Box(modifier = Modifier
+       .background(
+           if (category == selectedCategory) Color(
+               android.graphics.Color.parseColor(
+                   "#FF7F00"
+               )
+           ) else Color(android.graphics.Color.parseColor("#1E1E1E"))
+       )
+       .padding(8.dp)
+       .fillMaxWidth()
+       .clickable { onCategorySelected(category) }
+       .padding(vertical = 8.dp, horizontal = 8.dp)
+       .clip(RoundedCornerShape(8.dp)),
+
+       contentAlignment = Alignment.Center){
+       Text(
+           text = category.displayName,
+           color = Color.White
+       )
+   }
+
+}
+fun questionCountManager(questionCount: Int):Int {
+    if(questionCount == 50){
+        return 5
+    }
+ return (questionCount + 5)
+}
+
+/*suspend fun fetchQuestions(
     difficulty: Difficulty,
     category: Category,
     questionCount: Int,
@@ -204,7 +225,9 @@ suspend fun fetchQuestions(
     }
     deferredQuestions.await()
 }
+*/
 
+/*
 fun getQuestions(
     difficulty: Difficulty,
     category: Category,
@@ -218,29 +241,41 @@ fun getQuestions(
     // val questionInputList = HardcodedQuestions.questionInputs //TODO: get questions from API call
 
     var shuffledOptions: List<QuestionOutput> = emptyList()
+    if(difficulty.apiName == "Any Category"){
+
+        }
     val questionInputList = viewModel.questionListResponse
+
     shuffledOptions = getShuffledOptions(questionInputList)
     return shuffledOptions
 }
-
+*/
 
 fun getShuffledOptions(questionInputList: List<QuestionInput>?): List<QuestionOutput> {
     val questionOutputList = mutableListOf<QuestionOutput>()
     questionInputList?.forEach { questionInput ->
-        val options = questionInput.incorrect_answers.toMutableList().apply {
-            add(questionInput.correct_answer)
+        val options = mutableListOf<String>()
+        questionInput.incorrect_answers.forEach {
+            options.add(decodeHtmlEntities(it))
+        }
+        options.apply {
+            add(decodeHtmlEntities(questionInput.correct_answer))
             shuffle()
         }
         questionOutputList.add(
             QuestionOutput(
-                questionInput.question,
-                questionInput.correct_answer,
+                decodeHtmlEntities(questionInput.question),
+                decodeHtmlEntities(questionInput.correct_answer),
                 options,
-                questionInput.category
+                decodeHtmlEntities(questionInput.category)
             )
         )
     }
     return questionOutputList
+}
+
+fun decodeHtmlEntities(text: String): String {
+    return Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY).toString()
 }
 
 
