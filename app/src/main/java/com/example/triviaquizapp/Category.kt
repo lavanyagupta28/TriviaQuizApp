@@ -29,10 +29,7 @@ enum class Category(val id: Int, val displayName: String) {
 
 
     companion object {
-        fun getIdByDisplayName(displayName: String): Int? {
-            return entries.find { it.displayName == displayName }?.id
-        }
-        fun getAllCategories():List<Category> {
+        fun getAllCategories(): List<Category> {
             return enumValues<Category>().toList()
         }
     }

@@ -89,9 +89,9 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
         Spacer(
             modifier = Modifier.height(20.dp)
         )
-        Row() {
+        Row {
             Text(
-                text = "Q${currentIndex+1} ",
+                text = "Q${currentIndex + 1} ",
                 color = Color.White
 
             )
@@ -131,7 +131,7 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
                     isNext = false
                     isSelectedOnce = false
                 }
-                if(isSelectedOnce) {
+                if (isSelectedOnce) {
                     isSubmitted = true
                     if (selectedAnswer == question.correctAnswer) {
                         score += 10
