@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,20 +27,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.triviaquizapp.viewModel.QuestionViewModel
 
 
 @Composable
-fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavController) {
+fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavController, questionViewModel : QuestionViewModel = viewModel()) {
 
-    var score by remember { mutableStateOf(0) }
-    var correctQuestions by remember { mutableStateOf(0) }
-    var currentIndex by remember { mutableStateOf(0) }
-    var selectedAnswer by remember { mutableStateOf("") }
-    var isSubmitted by remember { mutableStateOf(false) }
-    var isNext by remember { mutableStateOf(false) }
-    var isSelectedOnce by remember { mutableStateOf(false) }
+    var score by rememberSaveable { mutableStateOf(questionViewModel.score) }
+    var correctQuestions by rememberSaveable { mutableStateOf(questionViewModel.correctQuestions) }
+    var currentIndex by rememberSaveable { mutableStateOf(questionViewModel.currentIndex) }
+    var selectedAnswer by remember { mutableStateOf(questionViewModel.selectedAnswer) }
+    var isSubmitted by remember { mutableStateOf(questionViewModel.isSubmitted) }
+    var isNext by remember { mutableStateOf(questionViewModel.isNext) }
+    var isSelectedOnce by remember { mutableStateOf(questionViewModel.isSelectedOnce) }
 
     if (currentIndex >= questionOutputList.size) {
         val questionCount = questionOutputList.size
@@ -114,7 +117,9 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
                 onOptionSelected = {
                     if (!isSubmitted) {
                         isSelectedOnce = true
+                        questionViewModel.isSelectedOnce = true
                         selectedAnswer = it
+                        questionViewModel.selectedAnswer = it
                     }
                 }
             )
@@ -125,17 +130,25 @@ fun QuestionScreen(questionOutputList: List<QuestionOutput>, navController: NavC
 
         SubmitButton(
             onClick = {
-                if (isSubmitted && isSelectedOnce) { // they clicked on next button
+                if (isSubmitted && isSelectedOnce) { //
+                    // they clicked on next button
                     currentIndex++
+                    questionViewModel.currentIndex++
                     isSubmitted = false
+                    questionViewModel.isSubmitted = false
                     isNext = false
+                    questionViewModel.isNext = false
                     isSelectedOnce = false
+                    questionViewModel.isSelectedOnce = false
                 }
                 if (isSelectedOnce) {
                     isSubmitted = true
+                    questionViewModel.isSubmitted = true
                     if (selectedAnswer == question.correctAnswer) {
                         score += 10
+                        questionViewModel.score += 10
                         correctQuestions += 1
+                        questionViewModel.correctQuestions += 1
                     }
                 }
             },

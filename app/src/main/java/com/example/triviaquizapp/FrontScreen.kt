@@ -73,7 +73,7 @@ fun FrontPage(navController: NavController, questionViewModel: QuestionViewModel
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .background(Color(android.graphics.Color.parseColor("#FF7F00")))
+                .background(Color(0xFFFF7F00))
                 .fillMaxWidth()
                 .padding(vertical = 16.dp)
                 .clickable {
@@ -138,10 +138,13 @@ fun FrontPage(navController: NavController, questionViewModel: QuestionViewModel
                 .padding(8.dp)
                 .fillMaxWidth()
                 .clickable {
-                    Difficulty
-                        .getDifficultyByDifficultyLevel(difficultyLevel)
-                        ?.let {
-                            difficulty = it.apiName
+                    if (Difficulty
+                            .getDifficultyByDifficultyLevel(difficultyLevel) != null
+                    ) Difficulty
+                        .getDifficultyByDifficultyLevel(difficultyLevel).let {
+                            if (it != null) {
+                                difficulty = it.apiName
+                            }
                             questionViewModel.difficulty = difficulty // Update ViewModel
                         }
                     var difficultyApi: String? = difficulty
