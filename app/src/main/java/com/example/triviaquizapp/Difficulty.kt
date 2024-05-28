@@ -8,7 +8,9 @@ enum class Difficulty(val difficultyLevel: Int, val apiName: String) {
 
     companion object {
         fun getDifficultyByDifficultyLevel(difficultyLevel: Int): Difficulty? {
-            return entries.find { it.difficultyLevel == difficultyLevel }
+            return entries.find {
+                it.difficultyLevel == difficultyLevel
+            }
         }
     }
 
