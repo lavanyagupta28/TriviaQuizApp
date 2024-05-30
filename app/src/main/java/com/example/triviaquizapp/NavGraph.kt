@@ -41,7 +41,7 @@ fun SetupNavGraph(
             val questionCount = backStackEntry.arguments?.getInt("questionCount") ?: 0
             val score = backStackEntry.arguments?.getInt("score") ?: 0
             val correctQuestion = backStackEntry.arguments?.getInt("correctQuestion") ?: 0
-            EndScreen(questionCount, score, correctQuestion)
+            EndScreen(questionCount, score, correctQuestion, navController)
         }
     }
 }
